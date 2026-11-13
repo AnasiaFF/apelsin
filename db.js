@@ -3,6 +3,7 @@ import Database from "better-sqlite3";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const db = new Database(join(__dirname, "conf.db"));
 db.pragma("foreing_keys=ON");
@@ -57,27 +58,46 @@ db.exec(`
   room_id INTEGER NOT NULL,
   date_start TEXT NOT NULL,
   payment TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULD 'Новая',
+  status TEXT NOT NULL DEFAULT 'Новая',
   reviev TEXT,
-  created_at TEXT DEFAULD (datetime('now')),
-  FOREIGN KEY (user_id) REFERENCER user(id) ON DELETE CASCADE
-  FOREIGN KEY (room_id) REFERENCER room(id) ON DELETE RESTRICT)
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE RESTRICT)
   `)
 const requestsCount= db.prepare("SELECT COUNT(*) AS c FROM requests").get().c;
 
 if (requestsCount===0){
   const stmtRequest = db.prepare(`
-    INSERT INTO requests(user_id, room_id, date_start, payment
-    VALUES (?,?,?,?))
+    INSERT INTO requests(user_id, room_id, date_start, payment)
+    VALUES (?,?,?,?)
   `);
    stmtRequest.run(1,1, "2027-03-15", "При очном посещение");
   stmtRequest.run(1,3, "2027-03-20", "Переводом по СБП" );
-  stmtRequest.run(2,4, "2027-04-01", "При очном посещении" );
+  stmtRequest.run(2,3, "2027-04-01", "При очном посещении" );
   console.log("Тестовые заявки добавлены");
     
 }
 
+class User {
+  constructor(){
+    this.table = "users";
+  }
+  findById(id){
+    return db.prepare(`SELECT * FROM ${this.table} WHERE id = ?`).get(id);
 
+  }
+  findByLogin(login){
+    return db.prepare(`SELECT * FROM ${this.table} WHERE login = ?`).get(login);
+  }
+  findAll(user){
+  return db.prepare(`SELECT * FROM ${this.table} WHERE user`).all();
+  }
+  count() {
+    return db.prepare(`SELECT COUNT(*) AS c FROM ${this.table}`).get().c;
+  }
+}
+
+export { User} 
 export default db;
 
 

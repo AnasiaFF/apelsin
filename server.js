@@ -1,8 +1,11 @@
 import express from "express";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-
+import {User} from "./db.js";
 import db from "./db.js";
+const adc = User.findById(1)
+console.log(adc)
+
 const rooms = db.prepare("SELECT * FROM rooms").all();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
